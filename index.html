@@ -100,6 +100,154 @@
   <script type="text/javascript">
 
     var map;
+    var selectedSchool;
+    var selectedPoly;
+    var prevSelectedPoly;
+    var showPrimary = true;
+    var showSecondary = false;
+    var gender = 'Boys';
+    var layer;
+
+
+    function selectSchool(id, poly, name) {
+    	selectedSchool = id;
+    	history.replaceState(null, "new title", '/schools/' + name.replace(/ /g, '-').toLowerCase() + '/');
+    	document.getElementById("school-id").innerText = id;
+    	
+    	document.title = name + ' Zone';
+    	prevSelectedPoly = selectedPoly;
+    	selectedPoly = poly;
+    	
+    	if (prevSelectedPoly != null) {
+    		prevSelectedPoly.set('fillOpacity', prevSelectedPoly.get('fillOpacity') - 0.1);
+    		prevSelectedPoly.set('fillColor', 'black');
+    	}
+    	
+    	if (selectedPoly != null) {
+    		selectedPoly.set('fillOpacity', selectedPoly.get('fillOpacity') + 0.1);
+    		selectedPoly.set('fillColor', 'red');
+    	}
+    }
+
+
+    function addPolyListener(poly, id, name, marker) {
+    	google.maps.event.addListener(poly, 'click', function() {
+    		if (markerInfoWin != null) {
+    			markerInfoWin.close();
+    		}
+    		
+    		markerInfoWin = new google.maps.InfoWindow({
+    			content: '<div><div>' + name + '</div></div>'
+    		});
+    		
+    		markerInfoWin.open(map, marker);
+    		selectSchool(id, poly, name);
+    	});
+    }
+    
+    function calcSchoolMarkers() {
+    	var total = 0;
+    	var selectedData = {};
+    	for (var i=0; i < data.schools.length; i++) {
+    		var school = data.schools[i];
+    		var poly = null;
+    		if (school.type == 'Primary') {
+    			if (showPrimary) {
+    				total++;
+    				school.marker.setMap(map);
+    				school.poly.setMap(map);
+    				poly = school.poly;
+    			} else {
+    				school.marker.setMap(null);
+    				school.poly.setMap(null);
+    			}
+    		}
+    		
+    		if (school.type == 'Secondary') {
+    			if (showSecondary && (school.gender == 'CoEd' || school.gender == gender)) {
+    				total++;
+    				school.marker.setMap(map);
+    				if (gender == 'Girls') {
+    					if (school.girlsPoly != null) {
+    						school.girlsPoly.setMap(map);
+    						poly = school.girlsPoly;
+    						school.poly.setMap(null);
+    					} else {
+    						school.poly.setMap(map);
+    						poly = school.poly;
+    					}
+    				} else {
+    					school.poly.setMap(map);
+    					poly = school.poly;
+    					if (school.girlsPoly != null) {
+    						school.girlsPoly.setMap(null);
+    					}
+    				}
+    			} else {
+    				school.marker.setMap(null);
+    				school.poly.setMap(null);
+    				if (school.girlsPoly != null) {
+    					school.girlsPoly.setMap(null);
+    				}
+    			}
+    		}
+    			
+    		if (school.type == 'Combined') {
+    			if (school.gender == 'CoEd' || school.gender == gender) {
+    				total++;
+    				school.marker.setMap(map);
+    				if (showPrimary) {
+    					school.poly.setMap(map);
+    					poly = school.poly;
+    				} else {
+    					school.poly.setMap(null);
+    				}
+    				
+    				if (showSecondary) {
+    					if (gender == 'Girls') {
+    						if (school.girlsPoly != null) {
+    							school.girlsPoly.setMap(map);
+    							poly = school.girlsPoly;
+    							school.secondaryPoly.setMap(null);
+    						} else {
+    							poly = school.secondaryPoly;
+    							school.secondaryPoly.setMap(map);
+    						}
+    					} else {
+    						school.secondaryPoly.setMap(map);
+    						poly = school.secondaryPoly;
+    						if (school.girlsPoly != null) {
+    							school.girlsPoly.setMap(null);
+    						}
+    					}
+    				} else {
+    					school.secondaryPoly.setMap(null);
+    					if (school.girlsPoly != null) {
+    						school.girlsPoly.setMap(null);
+    					}
+    				}
+    			} else {
+    				school.marker.setMap(null);
+    				school.poly.setMap(null);
+    				school.secondaryPoly.setMap(null);
+    				if (school.girlsPoly != null) {
+    					school.girlsPoly.setMap(null);
+    				}
+    			}
+    		}
+    		
+    		if (school.id == selectedSchool) {
+    			selectedData.poly = poly;
+    			selectedData.name = school.name;
+    		}
+    	}
+    	
+    	$('#numSchools').text(total + ' schools');
+    	return selectedData;
+    }
+
+
+
 
     function extendData() {
     	for (var i=0; i < data.schools.length; i++) {
