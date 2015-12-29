@@ -96,6 +96,7 @@
   -->
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="data/schoolzone.js"></script>
   <script type="text/javascript">
 
     var map;
@@ -114,6 +115,29 @@
         });
 
         map.controls[google.maps.ControlPosition.TOP_CENTER].push(document.getElementById('legend'));
+
+        layer = new google.maps.FusionTablesLayer({
+		query : {
+			select : 'geometry',
+			from : '1z2rJX3PaqPL_7mylCMkTkg_EubRHWG8dBH3AsMs',
+			where: 'SSC_2006 <= 21747'
+		},
+		suppressInfoWindows: false,
+		clickable: true,
+		styles: [{
+			polygonOptions: {
+				fillOpacity: 0.005,
+				strokeWeight: 2,
+				strokeColor: 'red'
+			}
+			
+		}]
+	});
+	
+	google.maps.event.addListener(layer, 'click', function(event) {
+		event.infoWindowHtml = "<div class='googft-info-window'><b>" + event.row.NAME_2006.value + "</b></div>";
+	});
+
     }
 
     var markers  = [];
