@@ -101,6 +101,143 @@
 
     var map;
 
+    function extendData() {
+    	for (var i=0; i < data.schools.length; i++) {
+    		var school = data.schools[i];
+    		school.latlng = new google.maps.LatLng(school.lat, school.lng);
+    		var selected = school.id == selectedSchool;
+    		var primaryColor = 'black';
+    		var secondaryColor = 'blue';
+    		var strokeWeight = globalStrokeWeight;
+    		var fillColor = 'black';
+    		var fillOpacity = 0.0;
+    		if (selected) {
+    			map.setCenter(school.latlng);
+    			if (school.gender == 'Girls') {
+    				gender = 'Girls';
+    			}
+    		}
+    		
+    		var color = primaryColor;
+    		if (school.type == 'Primary') {
+    			school.marker = new google.maps.Marker({
+    				position : school.latlng,
+    				icon : 'http://passinhouse.com.au/data/marker.png',
+    				title : school.name,
+    				clickable : false
+    			});
+    		} else if (school.type == 'Secondary') {
+    			school.marker = new google.maps.Marker({
+    				position : school.latlng,
+    				icon : 'http://passinhouse.com.au/data/markerBlue.png',
+    				title : school.name,
+    				clickable : false
+    			});
+    			color = secondaryColor;
+    			if (selected) {
+    				showPrimary = false;
+    				showSecondary = true;
+    			}
+    		} else if (school.type == 'Combined') {
+    			school.marker = new google.maps.Marker({
+    				position : school.latlng,
+    				icon : 'http://passinhouse.com.au/data/markerGreen.png',
+    				title : school.name,
+    				clickable : false
+    			});
+    		}
+    		
+    		var points = [];
+    		for (var j=0; j < school.zone.length; j++) {
+    			var point = school.zone[j];
+    			points.push(new google.maps.LatLng(point.lat, point.lng));
+    		}
+    		
+    		var girlPoints = null;
+    		if (school.girlsZone != null) {
+    			girlPoints = [];
+    			for (var j=0; j < school.girlsZone.length; j++) {
+    				var point = school.girlsZone[j];
+    				girlPoints.push(new google.maps.LatLng(point.lat, point.lng));
+    			}
+    		}
+    		
+    		if (school.restrictedZone) {
+    			school.poly = new google.maps.Polygon({
+    				paths : points,
+    				clickable: true,
+    				strokeWeight: strokeWeight,
+    				strokeColor: color,
+    				fillOpacity: fillOpacity + 0.1,
+    				fillColor: fillColor
+    			});
+    			addPolyListener(school.poly, school.id, school.name, school.marker);
+    		} else {
+    			school.poly = new google.maps.Polygon({
+    				paths : points,
+    				clickable: true,
+    				strokeWeight: strokeWeight,
+    				strokeColor: color,
+    				fillOpacity: fillOpacity,
+    				fillColor: fillColor
+    			});
+    			addPolyListener(school.poly, school.id, school.name, school.marker);
+    			
+    			if (girlPoints != null) {
+    				if (school.type == 'Combined') {
+    					color = secondaryColor;
+    				}
+    				
+    				school.girlsPoly = new google.maps.Polygon({
+    					paths : girlPoints,
+    					clickable: true,
+    					strokeWeight: strokeWeight,
+    					strokeColor: color,
+    					fillOpacity: fillOpacity,
+    					fillColor: fillColor
+    				});
+    				addPolyListener(school.girlsPoly, school.id, school.name, school.marker);
+    			}
+    		}
+    		
+    		if (school.secondaryZone != null) {
+    			points = [];
+    			for (var j=0; j < school.secondaryZone.length; j++) {
+    				var point = school.secondaryZone[j];
+    				points.push(new google.maps.LatLng(point.lat, point.lng));
+    			}
+    			
+    			if (school.restrictedZone) {
+    				school.secondaryPoly = new google.maps.Polygon({
+    					paths : points,
+    					clickable: true,
+    					strokeWeight: strokeWeight,
+    					strokeColor: secondaryColor,
+    					fillOpacity: fillOpacity + 0.1,
+    					fillColor: fillColor
+    				});
+    				addPolyListener(school.secondaryPoly, school.id, school.name, school.marker);
+    			} else {
+    				school.secondaryPoly = new google.maps.Polygon({
+    					paths : points,
+    					clickable: true,
+    					strokeWeight: strokeWeight,
+    					strokeColor: secondaryColor,
+    					fillOpacity: fillOpacity,
+    					fillColor: fillColor
+    				});
+    				addPolyListener(school.secondaryPoly, school.id, school.name, school.marker);
+    			}
+    		}
+    	}
+    	
+    	var selectedData = calcSchoolMarkers();
+    	if (selectedSchool != null) {
+    		selectSchool(selectedSchool, selectedData.poly, selectedData.name);
+    	}
+    }
+
+
     function initialize() {
         map = new google.maps.Map(document.getElementById('map'), {
           zoom: 12,
@@ -137,6 +274,63 @@
 	google.maps.event.addListener(layer, 'click', function(event) {
 		event.infoWindowHtml = "<div class='googft-info-window'><b>" + event.row.NAME_2006.value + "</b></div>";
 	});
+
+        extendData();
+
+        if (address !== '') {
+		var geocoder = new google.maps.Geocoder();
+		var geocodeReq = {
+				address: address,
+				bounds: new google.maps.LatLngBounds(new google.maps.LatLng(-39.272, 140.619),
+						new google.maps.LatLng(-33.828, 150.695)),
+				componentRestrictions: {
+				    country: 'AU',
+				    administrativeArea: 'VIC'
+				},
+				region: 'au'
+		};
+		
+		geocoder.geocode(geocodeReq, function(results, status) {
+			if (status == google.maps.GeocoderStatus.OK) {
+				var latLng = results[0].geometry.location;
+				for (var i=0; i < data.schools.length; i++) {
+					var school = data.schools[i];
+					var poly;
+					if (school.poly != null && school.poly.map != null) {
+						if (google.maps.geometry.poly.containsLocation(latLng, school.poly)) {
+							poly = school.poly;
+							break;
+						}
+					}
+					
+					if (school.secondaryPoly != null && school.secondaryPoly.map != null) {
+						if (google.maps.geometry.poly.containsLocation(latLng, school.secondaryPoly)) {
+							poly = school.secondaryPoly;
+							break;
+						}
+					}
+					
+					if (school.girlsPoly != null && school.girlsPoly.map != null) {
+						if (google.maps.geometry.poly.containsLocation(latLng, school.girlsPoly)) {
+							poly = school.girlsPoly;
+							break;
+						}
+					}
+				}
+		
+				map.setCenter(latLng);
+				google.maps.event.trigger(school.poly, 'click', {stop: null, latLng: latLng});
+				
+				new google.maps.Marker({
+					position : latLng,
+					map: map,
+					title : results[0].formatted_address
+				});
+			}
+		});
+	}
+
+
 
     }
 
