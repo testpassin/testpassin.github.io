@@ -89,7 +89,7 @@
       </div>
     </div>
   </div>
-
+  <div id=school-id style="display: none;"></div>
 
   <!--
   <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
@@ -108,7 +108,36 @@
     var gender = 'Boys';
     var layer;
     var globalStrokeWeight = window.innerWidth < 400 ? 1 : 2;
+    var markerInfoWin;
 
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+    
+    (function parse() {
+    	var id = document.getElementById("school-id").innerText;
+    	if (id != '') {
+    		selectedSchool = parseInt(id, 10);
+    	}
+    	
+    	address = getParameterByName('address');
+    	if (streetNumRangeRegExp.test(address)) {
+    		address = address.replace(streetNumRangeRegExp, '$1');
+    	}
+    	
+    	var type = getParameterByName('type');
+    	if (type === 'secondary-boys') {
+    		showPrimary = false;
+    		showSecondary = true;
+    	} else if (type === 'secondary-girls') {
+    		showPrimary = false;
+    		showSecondary = true;
+    		gender = 'Girls';
+    	}
+    })();
 
 
     function selectSchool(id, poly, name) {
