@@ -145,7 +145,7 @@
 
     function selectSchool(id, poly, name) {
     	selectedSchool = id;
-    	history.replaceState(null, "new title", '/schools/' + name.replace(/ /g, '-').toLowerCase() + '/');
+    	//history.replaceState(null, "new title", '/schools/' + name.replace(/ /g, '-').toLowerCase() + '/');
     	document.getElementById("school-id").innerText = id;
     	
     	document.title = name + ' Zone';
