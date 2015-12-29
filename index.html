@@ -272,14 +272,14 @@
     		if (school.type == 'Primary') {
     			school.marker = new google.maps.Marker({
     				position : school.latlng,
-    				icon : 'http://passinhouse.com.au/data/marker.png',
+    				icon : '/data/marker.png',
     				title : school.name,
     				clickable : false
     			});
     		} else if (school.type == 'Secondary') {
     			school.marker = new google.maps.Marker({
     				position : school.latlng,
-    				icon : 'http://passinhouse.com.au/data/markerBlue.png',
+    				icon : '/data/markerBlue.png',
     				title : school.name,
     				clickable : false
     			});
@@ -291,7 +291,7 @@
     		} else if (school.type == 'Combined') {
     			school.marker = new google.maps.Marker({
     				position : school.latlng,
-    				icon : 'http://passinhouse.com.au/data/markerGreen.png',
+    				icon : '/data/markerGreen.png',
     				title : school.name,
     				clickable : false
     			});
