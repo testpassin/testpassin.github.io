@@ -50,6 +50,7 @@
   <div id="legend">
       <form id="select_form">
         <a id="disclaimer" href="#disclaimerModal" data-toggle="modal"><u>Disclaimer</u></a>
+        <a id="settings" href="#">Schools</a>
         <select id="state_list">
           <option value="vic" selected="selected">VIC</option>
           <option value="nsw">NSW</option>
@@ -63,6 +64,25 @@
       </form>
   </div>
   <div id="map" style="width:100%; height:100%;"></div>
+
+  <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">SchoolZone</h4>
+        </div>
+        <div class="modal-body">
+          <div><label><input id="showPrimary" type="checkbox"/>Show public primary schools</label></div>
+          <div><label><input id="showSecondary" type="checkbox"/>Show public secondary schools</label></div>
+          <div><label>Calculate secondary school zones for:<select id="showForGender"><option>Boys</option><option>Girls</option></select></label></div> 
+          <div><label><input id="showSubs" type="checkbox"/>Show suburb boundaries</label></div> 
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="onSave();">Show</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
   <div class="modal fade" id="disclaimerModal">
@@ -111,6 +131,29 @@
     var markerInfoWin;
     var address;
     var streetNumRangeRegExp = /(\d+)\s*-\s*\d+/;
+
+    function onSettingsClick(event) {
+    	$('#showSubs')[0].checked = layer.getMap() != null;
+    	$('#showPrimary')[0].checked = showPrimary;
+    	$('#showSecondary')[0].checked = showSecondary;
+    	$('#showForGender').val(gender);
+    	$('#settingsModal').modal();
+    }
+
+
+    function onSave() {
+    	$("#settingsModal").modal('hide');
+    	showPrimary = $('#showPrimary')[0].checked;
+    	showSecondary = $('#showSecondary')[0].checked;
+    	gender = $('#showForGender :selected').text();
+    	if ($('#showSubs')[0].checked) {
+    		layer.setMap(map);
+    	} else {
+    		layer.setMap(null);
+    	}
+    	
+    	calcSchoolMarkers();
+    }
 
 
     function getParameterByName(name) {
@@ -456,6 +499,8 @@
 	google.maps.event.addListener(layer, 'click', function(event) {
 		event.infoWindowHtml = "<div class='googft-info-window'><b>" + event.row.NAME_2006.value + "</b></div>";
 	});
+
+        google.maps.event.addDomListener($('#settings')[0], 'click', onSettingsClick);
 
         extendData();
 
