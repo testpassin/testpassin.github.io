@@ -109,6 +109,9 @@
     var layer;
     var globalStrokeWeight = window.innerWidth < 400 ? 1 : 2;
     var markerInfoWin;
+    var address;
+    var streetNumRangeRegExp = /(\d+)\s*-\s*\d+/;
+
 
     function getParameterByName(name) {
         name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
