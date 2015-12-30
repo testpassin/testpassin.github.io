@@ -25,6 +25,12 @@
       padding: 10px;
     }
 
+    #iw-container .iw-content {
+	max-height: 310px;
+	overflow-y: auto;
+	overflow-x: hidden;
+    }
+
   </style>
 </head> 
 <body>
@@ -611,7 +617,7 @@
     initialize();
     $( "#date_list" ).trigger( "change" );
 
-    console.log("version: 1.15");
+    console.log("version: 1.16");
   </script>
 </body>
 </html>
