@@ -577,7 +577,7 @@
       //console.log("data/"+$('#state_list').val()+"/"+this.value+"/show.js");
       clean_markers();
 
-      var infowindow = new google.maps.InfoWindow();
+      var infowindow = new google.maps.InfoWindow({maxWidth: 350});
 
 
       $.getScript( "data/"+$('#state_list').val()+"/"+this.value+"/show.js", function( data, textStatus, jqxhr ) {
