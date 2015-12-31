@@ -583,7 +583,7 @@
       //console.log("data/"+$('#state_list').val()+"/"+this.value+"/show.js");
       clean_markers();
 
-      var infowindow = new google.maps.InfoWindow({maxWidth: 350});
+      var infowindow = new google.maps.InfoWindow();
 
 
       $.getScript( "data/"+$('#state_list').val()+"/"+this.value+"/show.js", function( data, textStatus, jqxhr ) {
@@ -617,7 +617,7 @@
     initialize();
     $( "#date_list" ).trigger( "change" );
 
-    console.log("version: 1.16");
+    console.log("version: 1.17");
   </script>
 </body>
 </html>
